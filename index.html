@@ -644,7 +644,7 @@ input:checked + .settings-slider:before {
         <div class="menu-btn" id="settingsBtn" role="button"><div class="icon-circle"><img class="icon-img" src="icon4.png" onerror="this.style.display='none'"></div><div class="menu-title-text">Settings</div><div class="menu-sub">Application settings</div></div>  
     </div>  
   
-    <div class="update-card" id="updateCard" role="button"><div class="card-left"><div class="update-title">Update information</div><div class="update-sub">new update information</div></div></div>  
+    <div class="update-card" id="updateCard" role="button"><div class="card-left"><div class="update-title">Public Chat</div><div class="update-sub">global chat for all users</div></div></div>  
 
     <!-- Tombol Free Coin's Event baru -->
     <div class="freecoin-card" id="freecoinCard" role="button">
@@ -915,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
     remindSwitch.addEventListener('change', saveToLocalStorage);  
     audioSwitch.addEventListener('change', saveToLocalStorage);  
   
-    updateCard.addEventListener('click', function(){ showToast("you are using the latest version"); });  
+    updateCard.addEventListener('click', function(){ showToast("Coming Soon!"); });  
   
     livechatPopup.addEventListener('click', function(e){ if (e.target === livechatPopup) livechatPopup.classList.remove('active'); });  
     settingsPopup.addEventListener('click', function(e){ if (e.target === settingsPopup) settingsPopup.classList.remove('active'); });  
