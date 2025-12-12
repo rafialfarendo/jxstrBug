@@ -1,2 +1,0 @@
-# jxstrBug
-jxstrbug ui
