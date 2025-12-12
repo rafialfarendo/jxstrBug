@@ -1,0 +1,1031 @@
+<!doctype html>          
+<html lang="id">          
+<head>          
+<meta charset="utf-8" />          
+<meta name="viewport" content="width=device-width,initial-scale=1" />          
+<title>NeonCore — Spinner & Pairing (Polished)</title>          
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">          
+<style>          
+  :root{          
+    --bg: #000;          
+    --card: #0d0d0d;          
+    --accent: #ff4d4d;          
+    --accent-weak: rgba(255,77,77,0.14);          
+    --text: #ffbcbc;          
+    --muted: #ffc7c7;          
+    --glass: rgba(18,18,18,0.95);          
+    --border: rgba(255,77,77,0.18);          
+    --glow: 0 8px 30px rgba(255,77,77,0.04);          
+    --radius: 12px;          
+    --online: #00ff88;          
+    --offline: #ff4d4d;          
+  }          
+          
+  html,body{       
+    height:100%;       
+    margin:0;       
+    background:var(--bg);       
+    color:var(--text);       
+    font-family:'Orbitron',sans-serif;       
+    -webkit-font-smoothing:antialiased;       
+    -moz-osx-font-smoothing:grayscale;       
+    padding-top: 0px; /* Tambahkan padding atas untuk header fixed */      
+  }          
+        
+  .container{       
+    max-width:520px;       
+    margin:0px auto;       
+    padding:20px;       
+    box-sizing:border-box;       
+  }          
+          
+  /* HEADER FIXED STYLING - DIGANTI DENGAN STYLE BARU */      
+  .header{          
+    display:flex;       
+    align-items:center;       
+    justify-content:space-between;       
+    gap:12px;       
+    margin-bottom:18px;      
+    position: fixed; /* Membuat header tetap di posisi atas */      
+    top: 0;      
+    left: 0;      
+    width: 100%;      
+    background: linear-gradient(180deg, #000 0%, #050405 100%); /* Latar belakang gradient seperti kode kedua */      
+    padding: 0 20px;      
+    box-sizing: border-box;      
+    z-index: 100; /* Pastikan header di atas konten lainnya */      
+    border-bottom: 1px solid rgba(255,60,60,0.2); /* Garis bawah dengan transparansi */      
+    height: 64px; /* Tinggi seperti kode kedua */      
+  }          
+        
+  .brand{          
+    font-size: 21px; /* Ukuran font seperti kode kedua */       
+    color: var(--accent);       
+    letter-spacing: 2px; /* Letter spacing seperti kode kedua */          
+    text-shadow: 0 0 12px rgba(255,77,77,0.08);          
+    flex: 1; /* Membuat brand mengambil ruang tersisa */      
+    text-align: center; /* Rata tengah seperti kode kedua */      
+    font-family: 'Orbitron', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Font stack lengkap */      
+  }          
+          
+  /* Tombol Back seperti di kode kedua */          
+  .back-btn {       
+    width: 40px;       
+    height: 40px;       
+    border-radius: 10px;       
+    display: flex;       
+    align-items: center;       
+    justify-content: center;       
+    color: var(--accent);       
+    cursor: pointer;       
+    transition: transform .15s ease;       
+    background: transparent;       
+    border: none;       
+  }          
+          
+  .back-btn:hover {       
+    transform: translateY(-2px);       
+  }          
+          
+  /* Versi text di header */          
+  .version-text {       
+    font-size: 12px;       
+    color: var(--muted);       
+    width: 40px; /* Lebar sama seperti di kode kedua */       
+    text-align: right;       
+  }          
+          
+  /* main card */          
+  .card{          
+    background:var(--card);          
+    border:1px solid var(--border);          
+    border-radius:16px;          
+    padding:16px;          
+    box-shadow: var(--glow);          
+    margin-bottom:14px;          
+  }          
+          
+  /* status card */          
+  .status-card{          
+    background:var(--card);          
+    border:1px solid var(--border);          
+    border-radius:16px;          
+    padding:16px;          
+    box-shadow: var(--glow);          
+    margin-bottom:14px;          
+  }          
+  .status-item{          
+    display:flex;          
+    align-items:center;          
+    justify-content:space-between;          
+    margin-bottom:12px;          
+    padding:8px 0;          
+  }          
+  .status-item:last-child{          
+    margin-bottom:0;          
+  }          
+  .status-label{          
+    font-size:14px;          
+    color:var(--muted);          
+    display:flex;          
+    align-items:center;          
+    gap:10px;          
+  }          
+  .status-value{          
+    font-size:14px;          
+    color:var(--text);          
+  }          
+  .status-indicator{          
+    width:8px;          
+    height:8px;          
+    border-radius:50%;          
+    display:inline-block;          
+  }          
+  .status-indicator.online{          
+    background-color:var(--online);          
+    box-shadow:0 0 8px rgba(0,255,136,0.5);          
+  }          
+  .status-indicator.offline{          
+    background-color:var(--offline);          
+    box-shadow:0 0 8px rgba(255,77,77,0.5);          
+  }          
+          
+  /* Field groups */          
+  .field { margin-bottom:14px; position:relative; }          
+          
+  /* floating small label above inputs (fixed so not covered) */          
+  .float-label {          
+    position:absolute;          
+    left:12px;          
+    top:-12px;          
+    background:linear-gradient(90deg, rgba(10,10,10,0.95), rgba(18,18,18,0.95));          
+    padding:4px 8px;          
+    border-radius:10px;          
+    font-size:11px;          
+    color:var(--muted);          
+    border:1px solid rgba(255,77,77,0.06);          
+    z-index:6; /* increased so it's never covered */          
+    pointer-events:none;          
+  }          
+          
+  /* Input */          
+  .input {          
+    width:100%;          
+    padding:14px 12px;          
+    border-radius:10px;          
+    border:1px solid rgba(255,77,77,0.09);          
+    background:#070707;          
+    color:var(--text);          
+    font-size:14px;          
+    box-sizing:border-box;          
+    outline:none;          
+    transition: box-shadow .14s, border-color .12s;          
+    font-family: 'Orbitron', sans-serif; /* Apply font to input */      
+    -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */      
+  }          
+  .input:focus{          
+    box-shadow:0 6px 18px rgba(255,77,77,0.06);          
+    border-color:var(--accent);          
+    /* remove translate/transform to avoid overlapping label */          
+  }          
+          
+  /* Spinner */          
+  .spinner {          
+    position:relative;          
+    user-select:none;          
+  }          
+  .spinner-toggle {          
+    display:flex;          
+    align-items:center;          
+    justify-content:space-between;          
+    gap:8px;          
+    cursor:pointer;          
+    padding:12px;          
+    border-radius:10px;          
+    border:1px solid rgba(255,77,77,0.09);          
+    background: linear-gradient(180deg, #070707, #0b0b0b);          
+    color:var(--text);          
+    font-size:14px;          
+    box-sizing:border-box;          
+    -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */      
+  }          
+  .spinner-toggle:focus { outline:none; box-shadow:0 6px 18px rgba(255,77,77,0.06); border-color:var(--accent); }          
+  .spinner-toggle .label {          
+    display:flex; flex-direction:column; align-items:flex-start;          
+  }          
+  .spinner-toggle .main { font-size:13px; color:var(--text); }          
+  .spinner-toggle .sub { font-size:11px; color:var(--muted); margin-top:2px; }          
+          
+  .caret {          
+    width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center;          
+    border:1px solid rgba(255,77,77,0.08);          
+    background:var(--accent-weak);          
+    color:var(--text);          
+    font-weight:700;          
+    font-size:12px;          
+    transition: transform .18s;          
+  }          
+  .caret.open { transform: rotate(180deg); }          
+          
+  .spinner-list {          
+    position:absolute;          
+    left:0; right:0;          
+    margin-top:10px;          
+    background:var(--glass);          
+    border:1px solid var(--border);          
+    border-radius:12px;          
+    padding:8px;          
+    z-index:30;          
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 18px rgba(255,77,77,0.04);          
+    max-height:240px;          
+    overflow:auto;          
+    transition: transform .2s ease, opacity .2s ease, max-height .2s ease;          
+    transform: translateY(-10px);          
+    opacity: 0;          
+    pointer-events: none;          
+  }          
+  .spinner-list.show {          
+    transform: translateY(0);          
+    opacity: 1;          
+    pointer-events: auto;          
+  }          
+  .opt {          
+    padding:10px 10px;          
+    border-radius:10px;          
+    margin:6px 2px;          
+    display:flex;          
+    align-items:center;          
+    justify-content:space-between;          
+    gap:12px;          
+    cursor:pointer;          
+    border:1px solid rgba(255,77,77,0.04);          
+    background: linear-gradient(180deg, rgba(255,77,77,0.02), transparent);          
+    transition: transform .08s, background .08s, border-color .08s;          
+    -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */      
+  }          
+  .opt:hover { background: rgba(255,77,77,0.06); transform: translateY(-2px); border-color:rgba(255,77,77,0.12); }          
+  .opt .o-left { display:flex; flex-direction:column; align-items:flex-start; }          
+  .opt .o-main { font-size:13px; color:var(--text); }          
+  .opt .o-sub { font-size:11px; color:var(--muted); margin-top:4px; }          
+          
+  .opt:focus { outline: none; box-shadow: 0 6px 18px rgba(255,77,77,0.06); border-color: var(--accent); }          
+  .opt[aria-selected="true"] { background: rgba(255,77,77,0.12); border-color: var(--accent); }          
+          
+  .badge {          
+    font-size:12px;          
+    color:#fff;          
+    background: var(--accent);          
+    padding:6px 8px;          
+    border-radius:8px;          
+    border:1px solid rgba(255,255,255,0.06);          
+    box-shadow: 0 6px 18px rgba(255,77,77,0.06);          
+    white-space:nowrap;          
+  }          
+          
+  /* action buttons: make full horizontal fill */          
+  .actions {          
+    display:flex;          
+    gap:10px;          
+    margin-top:10px;          
+    flex-wrap:nowrap;          
+  }          
+  .btn {          
+    padding:12px 14px; border-radius:10px; border:1px solid rgba(255,77,77,0.1);          
+    background: linear-gradient(180deg, rgba(255,77,77,0.06), rgba(255,77,77,0.03));          
+    color:var(--text); cursor:pointer; font-size:14px;          
+    transition: transform .08s, background .08s;          
+    flex:1;           /* fill available horizontal space equally */          
+    min-width:0;     /* prevent overflow in flex */          
+    font-family: 'Orbitron', sans-serif; /* Apply font to buttons */      
+    -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */      
+  }          
+  .btn:hover { transform: translateY(-2px); background: rgba(255,77,77,0.12); }          
+  .btn.primary { background: linear-gradient(180deg, var(--accent), #ff3a3a); color:#fff; border-color: rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(255,77,77,0.08); }          
+          
+  /* pairing card */          
+  .pair-card{ margin-top:6px; border-radius:12px; padding:14px; background:linear-gradient(180deg,#070707,#0c0c0c); border:1px solid var(--border); }          
+  .pair-label{ display:block; font-size:12px; color:var(--muted); margin-bottom:8px; }          
+  .pair-input{ width:100%; padding:12px 12px; border-radius:10px; border:1px solid rgba(255,77,77,0.09); background:#060606; color:var(--text); font-size:14px; box-sizing:border-box; font-family: 'Orbitron', sans-serif; -webkit-tap-highlight-color: transparent; }          
+          
+  /* log card: fixed height so card doesn't grow downward */          
+  .log-card { margin-top:14px; border-radius:12px; padding:14px; background:linear-gradient(180deg,#070707,#0c0c0c); border:1px solid var(--border); }          
+  .log-title { font-size:12px; color:var(--muted); margin-bottom:8px; }          
+  .log-body {          
+    font-size:13px; color:var(--muted);          
+    height:140px;             /* fixed height */          
+    overflow:auto;            /* scroll when content large */          
+    white-space:pre-wrap;     /* preserve line breaks */          
+    background: rgba(0,0,0,0.02);          
+    padding:8px;          
+    border-radius:8px;          
+    border:1px solid rgba(255,77,77,0.03);          
+  }          
+          
+  /* toast */          
+  .toast { position:fixed; bottom:26px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:8px 14px; border-radius:12px; font-size:13px; opacity:0; pointer-events:none; transition: opacity .18s, transform .18s; z-index:9999; font-family: 'Orbitron', sans-serif; }          
+  .toast.show { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(-6px); }          
+          
+  /* Limit Card Styles */  
+  .limit-card {  
+    background: linear-gradient(135deg, #0d0d0d, #0a0a0a);  
+    border: 1px solid var(--border);  
+    border-radius: 12px;  
+    padding: 14px;  
+    margin-top: 12px;  
+    margin-bottom: 14px;  
+    box-shadow: var(--glow);  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+  }  
+    
+  .limit-label {  
+    font-size: 14px;  
+    color: var(--muted);  
+  }  
+    
+  .limit-value {  
+    font-size: 16px;  
+    color: var(--text);  
+    font-weight: bold;  
+    display: flex;  
+    align-items: center;  
+    gap: 8px;  
+  }  
+      
+  /* Modal Styles */  
+  .modal-overlay {  
+    position: fixed;  
+    top: 0;  
+    left: 0;  
+    width: 100%;  
+    height: 100%;  
+    background: rgba(0, 0, 0, 0.7);  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    z-index: 1000;  
+    opacity: 0;  
+    pointer-events: none;  
+    transition: opacity 0.3s ease;  
+  }  
+    
+  .modal-overlay.show {  
+    opacity: 1;  
+    pointer-events: auto;  
+  }  
+    
+  .modal {  
+    background: var(--card);  
+    border: 1px solid var(--border);  
+    border-radius: 16px;  
+    padding: 20px;  
+    max-width: 320px;  
+    width: 90%;  
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);  
+    transform: translateY(20px);  
+    transition: transform 0.3s ease;  
+  }  
+    
+  .modal-overlay.show .modal {  
+    transform: translateY(0);  
+  }  
+    
+  .modal-header {  
+    display: flex;  
+    align-items: center;  
+    justify-content: space-between;  
+    margin-bottom: 16px;  
+  }  
+    
+  .modal-title {  
+    font-size: 16px;  
+    color: var(--text);  
+    display: flex;  
+    align-items: center;  
+    gap: 10px;  
+  }  
+    
+  .modal-close {  
+    background: none;  
+    border: none;  
+    color: var(--muted);  
+    font-size: 18px;  
+    cursor: pointer;  
+    width: 30px;  
+    height: 30px;  
+    border-radius: 50%;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    transition: background 0.2s;  
+  }  
+    
+  .modal-close:hover {  
+    background: rgba(255, 77, 77, 0.1);  
+  }  
+    
+  .modal-body {  
+    font-size: 14px;  
+    color: var(--muted);  
+    line-height: 1.5;  
+    margin-bottom: 20px;  
+  }  
+    
+  .modal-footer {  
+    display: flex;  
+    justify-content: flex-end;  
+  }  
+    
+  .modal-btn {  
+    padding: 10px 16px;  
+    border-radius: 10px;  
+    border: 1px solid rgba(255, 77, 77, 0.1);  
+    background: linear-gradient(180deg, rgba(255, 77, 77, 0.06), rgba(255, 77, 77, 0.03));  
+    color: var(--text);  
+    cursor: pointer;  
+    font-size: 14px;  
+    font-family: 'Orbitron', sans-serif;  
+    transition: transform 0.08s, background 0.08s;  
+  }  
+    
+  .modal-btn:hover {  
+    transform: translateY(-2px);  
+    background: rgba(255, 77, 77, 0.12);  
+  }  
+    
+  .error-icon {  
+    width: 24px;  
+    height: 24px;  
+    background: var(--offline);  
+    border-radius: 50%;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    font-size: 14px;  
+    font-weight: bold;  
+  }          
+          
+  @media (max-width:520px){       
+    .container{ padding:14px; }       
+    .brand{ font-size:18px; }       
+    .actions{ gap:8px; }       
+    .header {      
+      padding: 0 15px;      
+      height: 55px;      
+    }      
+    body {      
+      padding-top: 70px; /* Kurangi padding untuk mobile */      
+    }      
+  } 
+  /* HILANGKAN SEMUA EFEK BAWAAAN BROWSER YANG TIDAK DIINGINKAN */
+
+/* 1. Hilangkan outline biru saat fokus pada semua elemen */
+*:focus {
+  outline: none !important;
+}
+
+/* 2. Hilangkan highlight biru saat tap di mobile (untuk semua elemen) */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+}
+
+/* 3. Hilangkan selection text (highlight biru saat select text) */
+*::selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+*::-moz-selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* 4. Hilangkan kemampuan select text untuk elemen UI (opsional) */
+.container, .card, .status-card, .pair-card, .log-card,
+.header, .spinner-toggle, .btn, .opt, .modal,
+.brand, .status-label, .status-value, .float-label,
+.limit-card, .limit-label, .limit-value {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* 5. Tetap izinkan select untuk input dan textarea */
+input, textarea, .log-body {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* 6. Hilangkan efek drag pada gambar dan elemen */
+img, .spinner-toggle, .btn, .opt {
+  -webkit-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -ms-user-drag: none !important;
+  user-drag: none !important;
+}
+
+/* 7. Hilangkan styling default untuk button TANPA mengubah border-radius */
+button {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  /* JANGAN tambah border-radius: 0 di sini */
+}
+
+/* 8. Hilangkan panah di input number */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+}
+
+/* 9. Hilangkan styling default untuk input TANPA mengubah border-radius */
+input, textarea {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  /* JANGAN tambah border-radius: 0 di sini */
+}
+</style>          
+</head>          
+<body>          
+          
+  <div class="container">          
+    <!-- HEADER BARU SESUAI DENGAN KODE KEDUA -->          
+    <div class="header">          
+      <div class="back-btn">          
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"          
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">          
+          <path d="M19 12H5M12 19l-7-7 7-7"/>          
+        </svg>          
+      </div>          
+      <div class="brand">JxstrBug</div>          
+      <div class="version-text">v6.0</div>          
+    </div>          
+          
+    <!-- main card -->          
+    <div class="card" aria-labelledby="mainCardLabel">          
+          
+      <!-- Number Target -->          
+      <div class="field" style="margin-top:6px;">          
+        <span class="float-label">Number Target</span>          
+        <input id="numberTarget" class="input" type="text" placeholder="Masukkan nomor target..." inputmode="numeric" aria-label="Number Target" />          
+      </div>          
+          
+      <!-- Spinner -->          
+      <div class="field spinner" id="customSpinner">          
+        <div tabindex="0"          
+             role="button"          
+             aria-haspopup="listbox"          
+             aria-expanded="false"          
+             class="spinner-toggle"          
+             id="spinnerToggle">          
+          <div class="label">          
+            <div class="main" id="spinnerMain">Cr4shBl4nk Android - 5limit</div>          
+            <div class="sub" style="color:var(--muted);font-size:11px;margin-top:2px">Select Type Bug's</div>          
+          </div>          
+          <div class="caret" id="spinnerCaret">▼</div>          
+        </div>          
+          
+        <div class="spinner-list" id="spinnerList" role="listbox" aria-label="Paket limit">          
+          <div class="opt" data-value="Cr4shBl4nk Android|5" tabindex="0" role="option" aria-selected="false">          
+            <div class="o-left"><div class="o-main">Cr4shBl4nk Android</div><div class="o-sub">Android Cr4sh — 5 limit</div></div>          
+            <div class="badge">5</div>          
+          </div>          
+          
+          <div class="opt" data-value="Delay lite|2" tabindex="0" role="option" aria-selected="false">          
+            <div class="o-left"><div class="o-main">Delay lite</div><div class="o-sub">Delay lite — 2 limit</div></div>          
+            <div class="badge">2</div>          
+          </div>          
+          
+          <div class="opt" data-value="Cr4sh ios|5" tabindex="0" role="option" aria-selected="false">          
+            <div class="o-left"><div class="o-main">Cr4sh ios</div><div class="o-sub">iOS variant — 5 limit</div></div>          
+            <div class="badge">5</div>          
+          </div>          
+          
+          <div class="opt" data-value="Delay Permanent|12" tabindex="0" role="option" aria-selected="false">          
+            <div class="o-left"><div class="o-main">Delay Permanent</div><div class="o-sub">Permanent delay — 12 limit</div></div>          
+            <div class="badge">12</div>          
+          </div>          
+          
+          <div class="opt" data-value="Combo Hard|20" tabindex="0" role="option" aria-selected="false">          
+            <div class="o-left"><div class="o-main">Combo Hard</div><div class="o-sub">Combo hard — 20 limit</div></div>          
+            <div class="badge">20</div>          
+          </div>          
+        </div>          
+      </div>          
+          
+      <!-- Send Bug button -->          
+      <div class="actions" style="margin-top:12px;">          
+        <button class="btn primary" id="sendBugBtn" style="flex: 1;">Send Bug</button>          
+      </div>          
+        
+      <!-- Limit Card -->  
+      <div class="limit-card">  
+        <div class="limit-label">Your Coin's :</div>  
+        <div class="limit-value">  
+          <span id="currentLimit">0</span>  
+        </div>  
+      </div>  
+    </div>          
+          
+    <!-- Status card -->          
+    <div class="status-card" aria-labelledby="statusCardLabel">          
+      <div class="status-item">          
+        <div class="status-label">          
+          <span class="status-indicator online"></span>          
+          Free Sender          
+        </div>          
+        <div class="status-value">8 Free Sender</div>          
+      </div>          
+      <div class="status-item">          
+        <div class="status-label">          
+          <span class="status-indicator offline"></span>          
+          Manual Sender          
+        </div>          
+        <div class="status-value">Not Connected</div>          
+      </div>          
+      <div class="status-item">          
+        <div class="status-label">          
+          <span class="status-indicator online"></span>          
+          Server Status          
+        </div>          
+        <div class="status-value">Online</div>          
+      </div>          
+    </div>          
+          
+    <!-- Pairing card -->          
+    <div class="pair-card" aria-labelledby="pairCardLabel">          
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Sender / Pairing</div>          
+      <label class="pair-label">Connect Sender</label>          
+      <input id="pairInput" class="pair-input" type="text" placeholder="Masukkan sender : 62xxxx" aria-label="Add Sender / Pairing" />          
+      <div class="actions" style="margin-top:12px;">          
+        <button class="btn primary" id="connectSenderBtn" style="flex: 1;">Connect Sender</button>          
+        <button class="btn" id="clearPairBtn">Disconnect Sender</button>          
+      </div>          
+    </div>          
+          
+    <!-- Log card -->          
+    <div class="log-card" aria-labelledby="logTitle">          
+      <div class="log-title" id="logTitle">Log Status Bug</div>          
+      <div class="log-body" id="logBody">belum ada</div>          
+    </div>          
+  </div>          
+          
+  <div class="toast" id="toast">Pesan</div>          
+    
+  <!-- Modal for Not Enough Limit -->  
+  <div class="modal-overlay" id="limitModal">  
+    <div class="modal">  
+      <div class="modal-header">  
+        <div class="modal-title">  
+          <span class="error-icon">X</span>  
+          Not Enough Limit  
+        </div>  
+        <button class="modal-close" id="closeModalBtn">×</button>  
+      </div>  
+      <div class="modal-body">  
+        You don't have enough limit, top up your limit in the main menu or contact the admin for manual purchase.  
+      </div>  
+      <div class="modal-footer">  
+        <button class="modal-btn" id="modalCloseBtn">Close</button>  
+      </div>  
+    </div>  
+  </div>  
+          
+<script>          
+(function(){          
+  // elements          
+  const spinnerToggle = document.getElementById('spinnerToggle');          
+  const spinnerList = document.getElementById('spinnerList');          
+  const spinnerMain = document.getElementById('spinnerMain');          
+  const spinnerCaret = document.getElementById('spinnerCaret');          
+  const options = Array.from(document.querySelectorAll('.opt'));          
+  const numberTarget = document.getElementById('numberTarget');          
+  const sendBugBtn = document.getElementById('sendBugBtn');          
+  const pairInput = document.getElementById('pairInput');          
+  const connectSenderBtn = document.getElementById('connectSenderBtn');          
+  const clearPairBtn = document.getElementById('clearPairBtn');          
+  const logBody = document.getElementById('logBody');          
+  const toast = document.getElementById('toast');          
+  const currentLimit = document.getElementById('currentLimit');          
+  const limitModal = document.getElementById('limitModal');          
+  const closeModalBtn = document.getElementById('closeModalBtn');          
+  const modalCloseBtn = document.getElementById('modalCloseBtn');          
+  const backBtn = document.querySelector('.back-btn'); // Tombol back baru          
+          
+  let selectedOption = null;          
+  let jxstr_limits = 0; // Initial limit value  
+          
+  // toast helper          
+  function showToast(msg, ms = 1800){          
+    toast.textContent = msg;          
+    toast.classList.add('show');          
+    clearTimeout(toast._t);          
+    toast._t = setTimeout(()=> toast.classList.remove('show'), ms);          
+  }          
+          
+  // localStorage keys          
+  const LS_SELECTED = 'neoncore_selected_package';          
+  const LS_LOGS = 'neoncore_bug_logs';          
+  const LS_LIMITS = 'jxstr_limits';          
+          
+  // load last selection or set default          
+  function loadSelection(){          
+    const stored = localStorage.getItem(LS_SELECTED);          
+    if(stored){          
+      const found = options.find(o => o.dataset.value === stored);          
+      if(found) { selectOption(found, false); return; }          
+    }          
+    selectOption(options[0], false);          
+  }          
+          
+  // mark option selected visually & update spinner label          
+  function selectOption(opt, save = true){          
+    if(!opt) return;          
+    options.forEach(o => {          
+      o.setAttribute('aria-selected', 'false');          
+      o.style.boxShadow = '';          
+    });          
+    opt.setAttribute('aria-selected', 'true');          
+    opt.style.boxShadow = '0 6px 18px rgba(255,77,77,0.06)';          
+    selectedOption = opt;          
+    const [label, lim] = opt.dataset.value.split('|');          
+    spinnerMain.textContent = `${label} - ${lim}limit`;          
+    if(save){          
+      try{ localStorage.setItem(LS_SELECTED, opt.dataset.value); }catch(e){}          
+    }          
+  }          
+          
+  // toggle spinner list          
+  function toggleSpinner(show){          
+    const isHidden = !spinnerList.classList.contains('show');          
+    const shouldShow = (typeof show === 'boolean') ? show : isHidden;          
+    if(shouldShow){          
+      spinnerList.classList.add('show');          
+      spinnerToggle.setAttribute('aria-expanded','true');          
+      spinnerCaret.classList.add('open');          
+    } else {          
+      spinnerList.classList.remove('show');          
+      spinnerToggle.setAttribute('aria-expanded','false');          
+      spinnerCaret.classList.remove('open');          
+    }          
+  }          
+          
+  // click handlers          
+  spinnerToggle.addEventListener('click', (e)=>{          
+    e.stopPropagation();          
+    toggleSpinner();          
+  });          
+          
+  // option click          
+  options.forEach(opt => {          
+    opt.addEventListener('click', (e)=>{          
+      e.stopPropagation();          
+      selectOption(opt, true);          
+      toggleSpinner(false);          
+    });          
+    // keyboard accessibility          
+    opt.addEventListener('keydown', (e)=>{          
+      if(e.key === 'Enter' || e.key === ' '){          
+        e.preventDefault();          
+        selectOption(opt, true);          
+        toggleSpinner(false);          
+      } else if(e.key === 'ArrowDown'){          
+        e.preventDefault();          
+        const idx = options.indexOf(opt);          
+        const next = options[idx+1] || options[0];          
+        next.focus();          
+      } else if(e.key === 'ArrowUp'){          
+        e.preventDefault();          
+        const idx = options.indexOf(opt);          
+        const prev = options[idx-1] || options[options.length-1];          
+        prev.focus();          
+      }          
+    });          
+  });          
+          
+  // close spinner when clicking outside          
+  document.addEventListener('click', (e)=>{          
+    const path = e.composedPath ? e.composedPath() : (e.path || []);          
+    const inside = path.includes(spinnerToggle) || path.includes(spinnerList) || spinnerToggle.contains(e.target) || spinnerList.contains(e.target);          
+    if(!inside) toggleSpinner(false);          
+  });          
+          
+  // keyboard to open spinner          
+  spinnerToggle.addEventListener('keydown', (e)=>{          
+    if(e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown'){          
+      e.preventDefault();          
+      toggleSpinner(true);          
+      options[0].focus();          
+    }          
+  });          
+          
+  // basic number validation (allow digits, +, -, spaces)          
+  function normalizeNumberInput(val){          
+    return String(val || '').trim();          
+  }          
+          
+  // logs helpers          
+  function getLogs(){          
+    try{ return JSON.parse(localStorage.getItem(LS_LOGS) || '[]'); }catch(e){ return []; }          
+  }          
+  function saveLogs(arr){          
+    try{ localStorage.setItem(LS_LOGS, JSON.stringify(arr)); }catch(e){}          
+  }          
+  function appendLog(entry){          
+    const logs = getLogs();          
+    logs.unshift(entry);          
+    saveLogs(logs);          
+    renderLogs();          
+  }          
+  function renderLogs(){          
+    const logs = getLogs();          
+    if(!logs.length){          
+      logBody.textContent = 'belum ada';          
+      return;          
+    }          
+    // render last 8 logs          
+    const html = logs.slice(0,8).map(l => {          
+      const t = new Date(l.time).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });          
+      return `${t} — ${l.type}: ${l.message}`;          
+    }).join('\n\n');          
+    logBody.textContent = html;          
+  }          
+          
+  // Limit management functions  
+  function loadLimits() {
+  try {
+    // CARI USERNAME DARI SISTEM UTAMA
+    const username = localStorage.getItem('jxstr_username');
+    // CARI LIMIT DARI SISTEM UTAMA  
+    const limitsData = JSON.parse(localStorage.getItem('jxstr_limits') || '{}');
+    
+    if (username && limitsData[username] !== undefined) {
+      // PAKAI LIMIT DARI SISTEM UTAMA JXSTRBUG V6
+      jxstr_limits = parseInt(limitsData[username], 10);
+    } else {
+      // JIKA TIDAK ADA, PAKAI SISTEM LAMA
+      const stored = localStorage.getItem(LS_LIMITS);
+      if (stored) {
+        jxstr_limits = parseInt(stored, 10);
+      }
+    }
+  } catch(e) {
+    console.error('Error loading limits:', e);
+    // FALLBACK KE SISTEM LAMA
+    const stored = localStorage.getItem(LS_LIMITS);
+    if (stored) jxstr_limits = parseInt(stored, 10);
+  }
+  updateLimitDisplay();
+}  
+    
+  function updateLimitDisplay() {  
+    currentLimit.textContent = jxstr_limits;  
+  }  
+    
+  function useLimit(amount) {
+  if (jxstr_limits >= amount) {
+    jxstr_limits -= amount;
+    
+    // UPDATE KEDUA SISTEM: NEONCORE & JXSTRBUG V6
+    try {
+      // 1. UPDATE SISTEM NEONCORE (LAMA)
+      localStorage.setItem(LS_LIMITS, jxstr_limits.toString());
+      
+      // 2. UPDATE SISTEM JXSTRBUG V6 (UTAMA)
+      const username = localStorage.getItem('jxstr_username');
+      if (username) {
+        const limitsData = JSON.parse(localStorage.getItem('jxstr_limits') || '{}');
+        limitsData[username] = jxstr_limits;
+        localStorage.setItem('jxstr_limits', JSON.stringify(limitsData));
+      }
+    } catch(e) {
+      console.error('Error saving limits:', e);
+    }
+    
+    updateLimitDisplay();
+    return true;
+  } else {
+    return false;
+  }
+}  
+    
+  function showLimitModal() {  
+    limitModal.classList.add('show');  
+  }  
+    
+  function hideLimitModal() {  
+    limitModal.classList.remove('show');  
+  }  
+          
+  // Send Bug click          
+  sendBugBtn.addEventListener('click', ()=>{          
+    const num = normalizeNumberInput(numberTarget.value);          
+    if(!num){          
+      showToast('Isi Number Target terlebih dahulu');          
+      numberTarget.focus();          
+      return;          
+    }          
+    if(!selectedOption){          
+      showToast('Pilih paket terlebih dahulu');          
+      return;          
+    }          
+      
+    const [label, lim] = selectedOption.dataset.value.split('|');          
+    const limitCost = parseInt(lim, 10);  
+      
+    // Check if user has enough limit  
+    if (!useLimit(limitCost)) {  
+      showLimitModal();  
+      return;  
+    }  
+      
+    // create a log entry          
+    const entry = {          
+      time: Date.now(),          
+      type: 'SendBug',          
+      message: `Target=${num}, Paket=${label}(${lim})`          
+    };          
+    appendLog(entry);          
+    showToast('Bug dikirim (successfully)');          
+  });          
+          
+  // Connect Sender click          
+  connectSenderBtn.addEventListener('click', ()=>{          
+    const p = pairInput.value.trim();          
+    if(!p){          
+      showToast('Isi Add Sender / Pairing terlebih dahulu');          
+      pairInput.focus();          
+      return;          
+    }          
+      
+    // Check if user has enough limit for pairing (cost 0)  
+    if (!useLimit(0)) {  
+      showLimitModal();  
+      return;  
+    }  
+      
+    const entry = {          
+      time: Date.now(),          
+      type: 'ConnectSender',          
+      message: `Sender=${p}`          
+    };          
+    appendLog(entry);          
+    showToast('Sender terkoneksi (simulasi)');          
+  });          
+          
+  // clears          
+  clearPairBtn.addEventListener('click', ()=>{          
+    pairInput.value = '';          
+    showToast('Pairing direset');          
+  });          
+          
+  // Tombol Back click handler (sama seperti di kode kedua)          
+  backBtn.addEventListener('click', function() {          
+    // Tambahkan efek klik          
+    this.classList.add('clicky');          
+    setTimeout(() => this.classList.remove('clicky'), 200);          
+          
+    // Arahkan ke halaman utama (sesuaikan dengan kebutuhan)          
+    window.location.href = 'file:///android_asset/utama.html';          
+  });          
+          
+  // Modal close handlers  
+  closeModalBtn.addEventListener('click', hideLimitModal);  
+  modalCloseBtn.addEventListener('click', hideLimitModal);  
+    
+  // Close modal when clicking outside  
+  limitModal.addEventListener('click', (e) => {  
+    if (e.target === limitModal) {  
+      hideLimitModal();  
+    }  
+  });  
+          
+  // init          
+  loadSelection();          
+  renderLogs();          
+  loadLimits();  
+          
+  // persist number input in sessionStorage while page open (optional)          
+  try{          
+    const NS = 'neoncore_number_target';          
+    const savedNum = sessionStorage.getItem(NS);          
+    if(savedNum) numberTarget.value = savedNum;          
+    numberTarget.addEventListener('input', ()=> sessionStorage.setItem(NS, numberTarget.value));          
+  }catch(e){}          
+          
+})();          
+</script>          
+          
+</body>          
+</html>

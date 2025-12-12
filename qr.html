@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Generator</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+:root{
+    --bg:#030303;
+    --red-2:#ff6b6b;
+    --card-size:220px;
+    --font-stack:"Orbitron",system-ui;
+}
+
+/* FONT GLOBAL + RESET */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:var(--font-stack) !important;   /* font ke semua elemen */
+}
+
+html,body{
+    background:var(--bg);
+    color:#fff;
+}
+
+.app{min-height:100vh;display:flex;flex-direction:column}
+
+/* topbar */
+.topbar{
+    height:64px;display:flex;align-items:center;padding:0 12px;gap:8px;
+    background:linear-gradient(180deg,#000,#050405);
+    border-bottom:1px solid rgba(255,60,60,0.18);
+}
+.back-btn{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--red-2);cursor:pointer}
+.title{color:var(--red-2);font-size:18px;font-weight:700}
+.right-space{width:44px}
+
+.container{
+    flex:1;display:flex;flex-direction:column;align-items:center;padding:14px;gap:14px;
+}
+
+/* card fixed */
+.card{
+    width:var(--card-size);
+    height:var(--card-size);
+    border-radius:16px;
+    background:linear-gradient(180deg,#0b0b0b,#0f0f0f);
+    border:1px solid rgba(255,60,60,0.14);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,0.6);
+}
+
+.placeholder{
+    color:rgba(255,255,255,0.2);
+    font-size:12px;
+    text-align:center;
+    padding:8px;
+}
+
+/* QR fixed size */
+#qrcode canvas{
+    width:180px !important;
+    height:180px !important;
+}
+
+/* INPUT + BUTTON */
+.controls{width:320px;max-width:92%;display:flex;flex-direction:column;gap:10px}
+.input{
+    padding:12px;
+    border-radius:12px;
+    background:rgba(255,60,60,0.05);
+    border:1px solid rgba(255,60,60,0.12);
+    color:#fff;
+    font-size:13px;
+}
+.row{display:flex;gap:10px}
+.btn{
+    flex:1;padding:12px;border-radius:12px;background:var(--red-2);
+    border:none;color:#fff;font-weight:700;cursor:pointer;font-size:13px;
+}
+.btn.secondary{
+    background:transparent;border:1px solid rgba(255,60,60,0.12);color:var(--red-2);
+}
+
+/* STATUS CARD — lebih kecil */
+.status-card{
+    width:320px;max-width:92%;
+    padding:10px;border-radius:12px;
+    background:rgba(255,75,75,0.03);
+    border:1px solid rgba(255,60,60,0.12);
+    color:var(--red-2);
+    font-size:12px; /* <<< kecil */
+}
+::selection{ background: transparent; color: inherit; }
+::-moz-selection{ background: transparent; color: inherit; }
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+:focus{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+textarea:focus,
+button:focus{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+a, button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+html, body {
+  touch-action: manipulation;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+    <div class="topbar">
+        <div class="back-btn" onclick="goHome()">
+            <svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </div>
+        <div class="title">Qr generator</div>
+        <div class="right-space"></div>
+    </div>
+
+    <div class="container">
+
+        <div class="card" id="qrCard">
+            <div class="placeholder" id="cardPlaceholder">Click Generate to create QR</div>
+            <div id="qrcode" style="display:none"></div>
+        </div>
+
+        <div class="controls">
+            <input id="urlInput" class="input" type="text" placeholder="URL (https://example.com)" value="https://stecu.com" />
+            <div class="row">
+                <button class="btn" id="generateBtn">Generate</button>
+                <button class="btn secondary" id="clearBtn">Clear</button>
+            </div>
+        </div>
+
+        <div class="status-card" id="statusCard">Status:</div>
+
+    </div>
+</div>
+
+<script>
+const generateBtn = document.getElementById("generateBtn");
+const clearBtn = document.getElementById("clearBtn");
+const urlInput = document.getElementById("urlInput");
+const qrcodeEl = document.getElementById("qrcode");
+const placeholder = document.getElementById("cardPlaceholder");
+const statusCard = document.getElementById("statusCard");
+
+let qr;
+
+function setStatus(txt){
+    statusCard.textContent = txt ? "Status: " + txt : "Status:";
+}
+
+function clearQR(){
+    qrcodeEl.innerHTML = "";
+    qrcodeEl.style.display = "none";
+    placeholder.style.display = "block";
+    setStatus("");
+}
+
+function renderQR(){
+    const text = urlInput.value.trim();
+    if(!text){
+        setStatus("Please enter text/URL first");
+        return;
+    }
+
+    qrcodeEl.innerHTML = "";
+    qrcodeEl.style.display = "block";
+    placeholder.style.display = "none";
+
+    qr = new QRCode(qrcodeEl, {
+        text: text,
+        width: 180,
+        height: 180,
+        colorDark: "#000",
+        colorLight: "#fff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    setStatus("QR generated");
+}
+
+generateBtn.onclick = renderQR;
+urlInput.onkeydown = e => { if(e.key === "Enter") renderQR() };
+clearBtn.onclick = () => { urlInput.value = ""; clearQR() };
+
+document.addEventListener("DOMContentLoaded", clearQR);
+function goHome(){
+    window.location.href = "utama.html";
+}
+</script>
+
+</body>
+</html>
