@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Downloader Tools</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#030303;
+  --red:#ff4d4d;
+  --font:"Orbitron",system-ui;
+  --muted:#2b2b2b;
+  --muted-border: rgba(255,50,50,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font) !important}
+html,body{height:100%;background:var(--bg);color:#fff;}
+.page{padding:14px;max-width:480px;margin:0 auto}
+
+.topbar{
+  position:sticky;top:0;left:0;right:0;z-index:50;
+  height:64px;
+  background:linear-gradient(180deg,#000,#050405);
+  border-bottom:1px solid rgba(255,60,60,0.18);
+}
+.topbar .inner{
+  height:100%;display:flex;align-items:center;gap:12px;
+  padding:0 14px;max-width:480px;margin:0 auto;
+}
+.back-btn{
+  width:48px;height:48px;min-width:48px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;background:transparent;border:none;
+}
+.back-btn:active{transform:translateY(1px)}
+.back-icon{width:22px;height:22px;stroke:var(--red);stroke-width:2;fill:none;}
+.title{color:var(--red);font-size:18px;font-weight:700}
+.flex-right{flex:1}
+.content{margin-top:22px}
+
+.card{
+  background:linear-gradient(180deg,#0b0b0b,#121212);
+  border-radius:20px;padding:20px;
+  border:1px solid rgba(255,60,60,0.12);
+  box-shadow:0 10px 26px rgba(0,0,0,0.6);
+}
+.label{color:var(--red);font-weight:700;font-size:20px;margin-bottom:12px}
+.input{
+  width:100%;padding:16px;border-radius:18px;
+  background:#000;border:1px solid rgba(255,50,50,0.15);
+  color:#fff;font-size:14px;
+}
+.input::placeholder{color:rgba(255,255,255,0.18)}
+
+.btn{
+  margin-top:18px;width:100%;padding:18px;
+  border-radius:28px;border:none;cursor:pointer;
+  color:#fff;font-weight:700;font-size:18px;
+  background:linear-gradient(90deg,#ff4d4d,#ff1f3a);
+  box-shadow:0 10px 26px rgba(255,30,40,0.14);
+  transition:transform .12s ease,opacity .12s ease;
+}
+.btn:active{transform:translateY(1px)}
+
+.btn[disabled], .btn.loading{
+  background:linear-gradient(90deg,#2a2a2a,#1f1f1f);
+  color:rgba(255,255,255,0.7);
+  cursor:default;
+  box-shadow:none;
+  pointer-events: none;
+  opacity:0.95;
+}
+
+/* PREVIEW */
+#preview{
+  margin-top:14px;background:rgba(255,255,255,0.05);
+  padding:12px;border-radius:12px;display:none
+}
+#preview .res-label{color:var(--red);font-weight:700;margin-bottom:6px}
+
+/* POPUP / MODAL */
+.overlay{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.6);z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .22s ease;
+}
+.overlay.show{opacity:1;pointer-events:auto}
+
+/* modal box */
+.modal{
+  width:92%;max-width:420px;background:linear-gradient(180deg,#0b0b0b,#121212);
+  border-radius:14px;padding:18px;border:1px solid var(--muted-border);
+  box-shadow:0 20px 60px rgba(0,0,0,0.7);
+  transform:translateY(10px) scale(.98);
+  opacity:0;
+  transition:transform .22s cubic-bezier(.16,.98,.39,1),opacity .18s ease;
+}
+.overlay.show .modal{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+
+/* modal hide animation (add class .hide to play exit scaling) */
+.modal.hide{
+  transform:translateY(6px) scale(.98);
+  opacity:0;
+  transition:transform .18s ease,opacity .14s ease;
+}
+
+.modal .modal-title{color:var(--red);font-weight:700;font-size:18px;margin-bottom:8px}
+.modal .modal-sub{color:#fff;font-size:14px;margin-bottom:12px}
+.modal .modal-body{color:#ddd;font-size:13px;margin-bottom:18px}
+.modal .modal-actions{display:flex;gap:10px}
+.small-btn{
+  flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(90deg,#ff4d4d,#ff1f3a);color:#fff;font-weight:700;
+}
+.small-btn.ghost{
+  background:linear-gradient(90deg,#2a2a2a,#212121);
+  color:#fff;border:1px solid rgba(255,255,255,0.04);
+}
+
+/* accessibility focus */
+.small-btn:focus{outline:2px solid rgba(255,77,77,0.16);outline-offset:2px}
+
+::selection{ background: transparent; color: inherit; }
+::-moz-selection{ background: transparent; color: inherit; }
+* {-webkit-tap-highlight-color: transparent; -webkit-touch-callout: none;}
+:focus{ outline: none !important; box-shadow: none !important; }
+input:focus, textarea:focus, button:focus{ outline: none !important; box-shadow: none !important; }
+a, button { -webkit-appearance: none; appearance: none; }
+html, body { touch-action: manipulation; }
+</style>
+</head>
+
+<body>
+
+<div class="topbar" role="banner">
+  <div class="inner">
+    <button class="back-btn" onclick="goHome()" aria-label="Kembali">
+      <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 12H5"></path>
+        <path d="M12 19l-7-7 7-7"></path>
+      </svg>
+    </button>
+
+    <div class="title">Downloader Tools</div>
+    <div class="flex-right"></div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="content">
+    <div class="card">
+      <div class="label">Input Valid Url</div>
+      <input id="urlInput" class="input" placeholder="E.x: https://instagram.com/p/..." />
+      <button id="downloadBtn" class="btn" type="button" aria-live="polite">DOWNLOAD</button>
+
+      <!-- PREVIEW -->
+      <div id="preview">
+        <div class="res-label">Result:</div>
+        <div id="previewTitle" style="font-size:14px;color:#fff">—</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <div id="modal" class="modal" role="document">
+    <div class="modal-title">Result Found</div>
+    <div class="modal-sub">Results:</div>
+    <div class="modal-body">
+      <div id="modalResultTitle" style="font-weight:700;color:#fff;margin-bottom:8px">—</div>
+      <div>Select download type</div>
+    </div>
+    <div class="modal-actions">
+      <button id="btnMp3" class="small-btn">download mp3</button>
+      <button id="btnMp4" class="small-btn ghost">download mp4</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function goHome(){ window.location.href = "utama.html"; }
+
+const input = document.getElementById('urlInput');
+const btn = document.getElementById('downloadBtn');
+const preview = document.getElementById('preview');
+const previewTitle = document.getElementById('previewTitle');
+
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+const modalResultTitle = document.getElementById('modalResultTitle');
+const btnMp3 = document.getElementById('btnMp3');
+const btnMp4 = document.getElementById('btnMp4');
+
+let closingTimer = null;
+
+function setLoading(isLoading){
+  if(isLoading){
+    btn.disabled = true;
+    btn.classList.add('loading');
+    // keep text as "DOWNLOAD"
+  } else {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+}
+
+function showModalWithTitle(title){
+  modalResultTitle.textContent = title || '—';
+  // make visible
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden','false');
+  // ensure modal not in hide state
+  modal.classList.remove('hide');
+  // focus first action for accessibility
+  btnMp3.focus();
+}
+
+function hideModal(){
+  // play exit animation by adding hide class then remove overlay after animation
+  modal.classList.add('hide');
+  overlay.setAttribute('aria-hidden','true');
+  // clear previous timer if any
+  if(closingTimer) clearTimeout(closingTimer);
+  closingTimer = setTimeout(()=>{
+    overlay.classList.remove('show');
+    modal.classList.remove('hide');
+    closingTimer = null;
+  }, 220);
+}
+
+/* close when click outside modal (on overlay) */
+overlay.addEventListener('click', (e) => {
+  if(e.target === overlay){
+    hideModal();
+  }
+});
+
+/* buttons close popup when clicked */
+btnMp3.addEventListener('click', () => {
+  // placeholder action: close modal
+  hideModal();
+  // here you could trigger actual download logic
+});
+btnMp4.addEventListener('click', () => {
+  hideModal();
+  // placeholder action
+});
+
+/* ESC key should close modal */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && overlay.classList.contains('show')){
+    hideModal();
+  }
+});
+
+btn.addEventListener('click', async () => {
+  const url = input.value.trim();
+  if (!url) return;
+
+  preview.style.display = 'block';
+  previewTitle.textContent = 'Load...';
+
+  setLoading(true);
+
+  const proxy = "https://api.allorigins.win/raw?url=";
+  const fetchUrl = proxy + encodeURIComponent(url);
+
+  try {
+    const res = await fetch(fetchUrl);
+    if (!res.ok) throw new Error("Gagal mengambil halaman");
+
+    const html = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const og = doc.querySelector('meta[property=\"og:title\"]')?.content;
+    const tw = doc.querySelector('meta[name=\"twitter:title\"]')?.content;
+    const titleTag = doc.querySelector('title')?.textContent;
+
+    const finalTitle = (og || tw || titleTag || "no results found").trim();
+    previewTitle.textContent = finalTitle;
+
+    if(finalTitle && finalTitle !== 'no results found'){
+      // show popup with animations
+      showModalWithTitle(finalTitle);
+    }
+
+  } catch (err) {
+    previewTitle.textContent = "Error: " + err.message;
+  } finally {
+    setLoading(false);
+  }
+});
+</script>
+
+</body>
+</html>
