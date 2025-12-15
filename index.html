@@ -1,1 +1,100 @@
-wait a minute , fix bug
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jxstr Maintenance</title>
+  <style>
+    :root {
+      --bg: #0b0b0b;
+      --card: #121212;
+      --accent: #ff4d4d;
+      --accent-soft: #ffbcbc;
+      --text: #e6e6e6;
+      --muted: #9a9a9a;
+      --glow: 0 0 20px rgba(255,77,77,.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at top, rgba(255,77,77,.08), transparent 60%),
+        linear-gradient(180deg, #050505, var(--bg));
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #141414, var(--card));
+      border: 1px solid rgba(255,77,77,.25);
+      border-radius: 14px;
+      padding: 40px 32px;
+      width: min(420px, 90%);
+      text-align: center;
+      box-shadow: var(--glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255,77,77,.15),
+        transparent 70%
+      );
+      opacity: .35;
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .status {
+      font-size: 15px;
+      color: var(--accent-soft);
+      margin-bottom: 18px;
+      letter-spacing: .5px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .line {
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+      margin: 20px auto;
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(255,77,77,.6);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Wait a Minute</h1>
+    <div class="line"></div>
+    <div class="status">Currently fixing bugs</div>
+    <p>Please come back in a moment</p>
+  </div>
+</body>
+                                     </html>
