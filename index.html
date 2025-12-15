@@ -151,57 +151,7 @@ svg{ stroke:#ffbcbc; fill:none; stroke-width:2; stroke-linecap:round; }
     box-shadow:0 8px 22px rgba(255,58,58,0.08);
     max-height: 80vh;
     overflow-y: auto;
-}
-
-/* Popup Maintenance untuk WA Bugs */
-.maintenance-popup-content { 
-    background:#0d0d0d; 
-    border:1px solid #ff3a3a33; 
-    border-radius:18px; 
-    padding:24px; 
-    width:85%; 
-    max-width:340px; 
-    text-align:center; 
-    box-shadow:0 8px 22px rgba(255,58,58,0.08);
-}
-
-.maintenance-icon {
-    width:60px;
-    height:60px;
-    margin:0 auto 15px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    background:rgba(255,58,58,0.05);
-    border:1.6px solid rgba(255,58,58,0.1);
-}
-
-.maintenance-title {
-    font-size:22px;
-    color:#ff4d4d;
-    margin-bottom:15px;
-    font-weight:700;
-}
-
-.maintenance-text {
-    font-size:15px;
-    color:#ffbcbc;
-    margin-bottom:20px;
-    line-height:1.5;
-}
-
-.maintenance-countdown {
-    font-size:24px;
-    color:#ff4d4d;
-    font-weight:700;
-    margin:20px 0;
-    padding:15px;
-    background:rgba(255,58,58,0.05);
-    border:1px solid rgba(255,58,58,0.2);
-    border-radius:12px;
-    letter-spacing:2px;
-}
+}  
   
 .popup-icon{ 
     width:48px; 
@@ -417,10 +367,101 @@ input:checked + .settings-slider:before {
         transform: rotate(360deg); 
     } 
 }  
-
-/* Menghapus FAB container karena tidak dibutuhkan lagi */
+  
 .fab-container { 
-    display: none; /* Sembunyikan FAB container */
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 80; 
+    display:flex; 
+    align-items:center; 
+    gap:8px; 
+    transition: transform 0.35s ease, right 0.35s ease; 
+}  
+.fab-container.collapsed { 
+    transform: translateX(70px); 
+}  
+.fab { 
+    width: 70px; 
+    height: 70px; 
+    border-radius: 50%; 
+    background: #0d0d0d; 
+    border: 1px solid #ff3a3a33; 
+    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.45); 
+    display:flex; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center; 
+    color:#ffbcbc; 
+    cursor:pointer; 
+    transition:0.25s; 
+}  
+.fab:active { 
+    transform: scale(0.97); 
+}  
+.fab.disabled { 
+    opacity: 0.6; 
+    cursor: not-allowed; 
+    background: linear-gradient(135deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45); 
+}  
+.fab-logo { 
+    width: 24px; 
+    height: 24px; 
+    margin-bottom: 6px; 
+}  
+.fab-timer { 
+    font-size: 11px; 
+    font-weight:700; 
+    color: #ffecec; 
+    background: rgba(0,0,0,0.18); 
+    padding: 4px 8px; 
+    border-radius: 8px; 
+    min-width: 52px; 
+    text-align:center; 
+}  
+.fab-tab { 
+    width: 36px; 
+    height: 36px; 
+    border-radius: 12px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    background: rgba(255,255,255,0.03); 
+    border:1px solid rgba(255,255,255,0.06); 
+    color:#ffbcbc; 
+    cursor:pointer; 
+    user-select:none; 
+    transition: transform 0.15s; 
+    font-weight:700; 
+}  
+.fab-container.collapsed .fab { 
+    opacity:0; 
+    pointer-events:none; 
+    transform: scale(0.9); 
+}  
+.fab-container:not(.collapsed) .fab-tab { 
+    opacity:0; 
+    pointer-events:none; 
+    transform: translateX(8px); 
+}  
+.fab-tab.rotate { 
+    transform: rotate(180deg); 
+}  
+.fab:focus, .fab-tab:focus { 
+    outline: 2px solid rgba(255,77,77,0.25); 
+    outline-offset:2px; 
+}  
+  
+@media (max-width:420px){ 
+    .fab-container { 
+        right: 14px; 
+        bottom: 16px; 
+    } 
+    .fab { 
+        width:64px; 
+        height:64px; 
+    } 
 }  
   
 /* Side Menu Styles */  
@@ -602,26 +643,6 @@ input:checked + .settings-slider:before {
         </div>
     </div>
 </div>
-
-<!-- Popup untuk WA Bugs Maintenance -->
-<div class="popup-overlay" id="maintenancePopup">
-    <div class="maintenance-popup-content">
-        <div class="maintenance-icon">
-            <svg viewBox="0 0 24 24" width="30" height="30">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <div class="maintenance-title">Under Maintenance</div>
-        <div class="maintenance-text">WA Bugs feature is currently undergoing maintenance to provide better service.</div>
-        <div class="maintenance-text">Back again at:</div>
-        <div class="maintenance-countdown" id="maintenanceCountdown">00:00:00</div>
-        <div class="popup-buttons">
-            <button class="popup-btn cancel" id="maintenanceCloseBtn">Close</button>
-        </div>
-    </div>
-</div>
   
 <div class="wrap" id="wrap">  
     <div class="head">  
@@ -644,7 +665,7 @@ input:checked + .settings-slider:before {
         <div class="menu-btn" id="settingsBtn" role="button"><div class="icon-circle"><img class="icon-img" src="icon4.png" onerror="this.style.display='none'"></div><div class="menu-title-text">Settings</div><div class="menu-sub">Application settings</div></div>  
     </div>  
   
-    <div class="update-card" id="updateCard" role="button"><div class="card-left"><div class="update-title">Public Chat</div><div class="update-sub">global chat for all users</div></div></div>  
+    <div class="update-card" id="updateCard" role="button"><div class="card-left"><div class="update-title">Public Chat</div><div class="update-sub">Global Chat With All User</div></div></div>  
 
     <!-- Tombol Free Coin's Event baru -->
     <div class="freecoin-card" id="freecoinCard" role="button">
@@ -667,8 +688,8 @@ input:checked + .settings-slider:before {
 <div class="popup-overlay" id="settingsPopup"><div class="popup-content"><div class="popup-title">Settings</div><div class="popup-text" style="margin-bottom: 20px;">Adjust your application settings:</div><div class="settings-item"><div class="settings-text">Remind me</div><label class="settings-switch"><input type="checkbox" id="remindSwitch"><span class="settings-slider"></span></label></div><div class="settings-item"><div class="settings-text">Audio intro</div><label class="settings-switch"><input type="checkbox" id="audioSwitch"><span class="settings-slider"></span></label></div><div class="popup-buttons" style="margin-top: 20px;"><button class="popup-btn cancel" id="settingsCancelBtn">Close</button></div></div></div>  
   
 <div class="toast" id="toast" role="status" aria-live="polite">Wrong key</div>  
-
-<!-- FAB dihapus -->
+  
+<div class="fab-container" id="fabContainer" aria-hidden="false"><div class="fab-tab" id="fabTab" title="Toggle FAB" role="button" aria-label="Toggle free coin button">‹</div><div class="fab" id="freeCoinFab" role="button" aria-label="Claim free coins"><img src="freelimit.png" class="fab-logo" alt="" onerror="this.style.display='none'"><div class="fab-timer" id="fabTimer">Claim +2</div></div></div>  
   
 <script>  
 document.addEventListener('DOMContentLoaded', function() {  
@@ -710,66 +731,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const remindSwitch = document.getElementById('remindSwitch');  
     const audioSwitch = document.getElementById('audioSwitch');  
     const settingsCancelBtn = document.getElementById('settingsCancelBtn');  
+  
+    const freeCoinFab = document.getElementById('freeCoinFab');  
+    const fabTimer = document.getElementById('fabTimer');  
+    const fabContainer = document.getElementById('fabContainer');  
+    const fabTab = document.getElementById('fabTab');  
+  
+    const qrGeneratorBtn = document.getElementById('qrGeneratorBtn');  
+    const tools2Btn = document.getElementById('tools2Btn');  
+    const tools3Btn = document.getElementById('tools3Btn');  
+    const telegramBtn = document.getElementById('telegramBtn');  
 
     // Element baru untuk Free Coin Event
     const freecoinCard = document.getElementById('freecoinCard');
     const freecoinPopup = document.getElementById('freecoinPopup');
     const freecoinTaskText = document.getElementById('freecoinTaskText');
     const freecoinCloseBtn = document.getElementById('freecoinCloseBtn');
-
-    // Element untuk Maintenance Popup
-    const maintenancePopup = document.getElementById('maintenancePopup');
-    const maintenanceCountdown = document.getElementById('maintenanceCountdown');
-    const maintenanceCloseBtn = document.getElementById('maintenanceCloseBtn');
   
     let coins = 0;  
+    let lastClaimTime = null;  
     let isPremium = false;  
+    const CLAIM_LIMIT_HOUR = 12;  
+    const COINS_PER_CLAIM = 2;  
     const FREECOIN_TASK_URL = 'https://api.npoint.io/6e9df88a9d3c462b928c'; // ganti dengan URL npoint Anda
   
-    // Target waktu maintenance: 15 bulan ini jam 12 siang
-    function getMaintenanceEndTime() {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        
-        // Set target ke tanggal 15 bulan ini jam 12:00 siang
-        const targetDate = new Date(currentYear, currentMonth, 15, 12, 0, 0, 0);
-        
-        // Jika sudah lewat tanggal 15 bulan ini, set ke bulan depan
-        if (now > targetDate) {
-            targetDate.setMonth(targetDate.getMonth() + 1);
-        }
-        
-        return targetDate;
-    }
-    
-    // Fungsi untuk menghitung countdown
-    function updateMaintenanceCountdown() {
-        const endTime = getMaintenanceEndTime();
-        const now = new Date();
-        
-        // Jika waktu maintenance sudah berakhir
-        if (now >= endTime) {
-            maintenanceCountdown.textContent = "00:00:00";
-            return;
-        }
-        
-        // Hitung selisih waktu
-        const diff = endTime - now;
-        
-        // Konversi ke jam, menit, detik
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        // Format ke string dengan leading zero
-        const formattedHours = hours.toString().padStart(2, '0');
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        const formattedSeconds = seconds.toString().padStart(2, '0');
-        
-        // Update tampilan
-        maintenanceCountdown.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-    }
+    fabTimer.textContent = "Claim +2";  
+  
+    function formatTime(seconds){  
+        if (seconds < 0) seconds = 0;  
+        const hrs = Math.floor(seconds / 3600);  
+        const mins = Math.floor((seconds % 3600) / 60);  
+        const secs = seconds % 60;  
+        return `${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;  
+    }  
+  
+    function updateTimer(){  
+        if (isPremium) {  
+            freeCoinFab.style.display = 'none';  
+            fabContainer.setAttribute('aria-hidden','true');  
+            return;  
+        } else {  
+            freeCoinFab.style.display = '';  
+            fabContainer.setAttribute('aria-hidden','false');  
+        }  
+  
+        if (!lastClaimTime){  
+            freeCoinFab.classList.remove('disabled');  
+            fabTimer.textContent = "Claim +2";  
+            return;  
+        }  
+  
+        const last = new Date(lastClaimTime);  
+        const nextAfterLast = new Date(last);  
+        nextAfterLast.setHours(CLAIM_LIMIT_HOUR,0,0,0);  
+        if (last.getHours() >= CLAIM_LIMIT_HOUR) nextAfterLast.setDate(nextAfterLast.getDate() + 1);  
+        const remaining = Math.floor((nextAfterLast - new Date())/1000);  
+  
+        if (remaining > 0){  
+            freeCoinFab.classList.add('disabled');  
+            fabTimer.textContent = formatTime(remaining);  
+        } else {  
+            freeCoinFab.classList.remove('disabled');  
+            fabTimer.textContent = "Claim +2";  
+        }  
+    }  
+  
+    function claimFreeCoins(){  
+        if (isPremium){ showToast("You have unlimited coins as premium user!"); return; }  
+        if (freeCoinFab.classList.contains('disabled')){ showToast("Your free coin has been claimed, come back tomorrow"); return; }  
+        coins += COINS_PER_CLAIM;  
+        lastClaimTime = new Date().toISOString();  
+        saveToLocalStorage();  
+        updateCoinDisplay();  
+        updateTimer();  
+        showToast("Success Claimed 2 Coins");  
+    }  
   
     function updateCoinDisplay(){  
         if (isPremium) limitText.textContent = "Your Coins : Unlimited";  
@@ -777,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }  
   
     function saveToLocalStorage(){  
-        const data = { coins, isPremium, remindSwitch: remindSwitch.checked, audioSwitch: audioSwitch.checked };  
+        const data = { coins, lastClaimTime, isPremium, remindSwitch: remindSwitch.checked, audioSwitch: audioSwitch.checked };  
         try { localStorage.setItem('jxstrbug_data', JSON.stringify(data)); } catch(e){}  
     }  
   
@@ -787,12 +823,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (saved){  
                 const data = JSON.parse(saved);  
                 coins = data.coins || 0;  
+                lastClaimTime = data.lastClaimTime || null;  
                 isPremium = data.isPremium || false;  
                 if (data.remindSwitch !== undefined) remindSwitch.checked = data.remindSwitch;  
                 if (data.audioSwitch !== undefined) audioSwitch.checked = data.audioSwitch;  
             }  
         } catch(e){}  
         updateCoinDisplay();  
+        updateTimer();  
     }  
   
     // Fungsi untuk mengambil task dari online (contoh dari API)
@@ -864,22 +902,9 @@ document.addEventListener('DOMContentLoaded', function() {
         freecoinPopup.classList.remove('active');
         unlockScroll();
     }
-    
-    // Handler untuk Maintenance Popup
-    function openMaintenancePopup() {
-        maintenancePopup.classList.add('active');
-        lockScroll();
-        // Update countdown segera
-        updateMaintenanceCountdown();
-    }
-    
-    function closeMaintenancePopup() {
-        maintenancePopup.classList.remove('active');
-        unlockScroll();
-    }
   
-    // Mengganti handler WA Bugs untuk menampilkan popup maintenance
-    waBugsBtn.addEventListener('click', openMaintenancePopup);  
+    // handlers  
+    waBugsBtn.addEventListener('click', ()=> window.location.href='bug.html');  
     downloadBtn.addEventListener('click', ()=> window.location.href='down.html');  
     livechatBtn.addEventListener('click', ()=> livechatPopup.classList.add('active'));  
     settingsBtn.addEventListener('click', ()=> settingsPopup.classList.add('active'));  
@@ -889,12 +914,6 @@ document.addEventListener('DOMContentLoaded', function() {
     freecoinCloseBtn.addEventListener('click', closeFreeCoinPopup);
     freecoinPopup.addEventListener('click', function(e) {
         if (e.target === freecoinPopup) closeFreeCoinPopup();
-    });
-    
-    // Handler untuk tombol Maintenance
-    maintenanceCloseBtn.addEventListener('click', closeMaintenancePopup);
-    maintenancePopup.addEventListener('click', function(e) {
-        if (e.target === maintenancePopup) closeMaintenancePopup();
     });
   
     menuBtn.addEventListener('click', openSideMenu);  
@@ -919,6 +938,17 @@ document.addEventListener('DOMContentLoaded', function() {
   
     livechatPopup.addEventListener('click', function(e){ if (e.target === livechatPopup) livechatPopup.classList.remove('active'); });  
     settingsPopup.addEventListener('click', function(e){ if (e.target === settingsPopup) settingsPopup.classList.remove('active'); });  
+  
+    freeCoinFab.addEventListener('click', function(){ if (!freeCoinFab.classList.contains('disabled')) claimFreeCoins(); else showToast("Your free coin has been claimed, come back tomorrow"); });  
+  
+    function toggleFabCollapse(){  
+        const collapsed = fabContainer.classList.toggle('collapsed');  
+        fabTab.textContent = collapsed ? '›' : '‹';  
+        fabTab.classList.add('rotate');  
+        setTimeout(()=> fabTab.classList.remove('rotate'), 180);  
+    }  
+    fabTab.addEventListener('click', toggleFabCollapse);  
+    fabTab.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFabCollapse(); } });  
   
     limitBtn.addEventListener('click', function(){ topupPopup.classList.add('active'); });  
     profileBtn.addEventListener('click', function(){  
@@ -966,6 +996,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isValid) {  
                 isPremium = true;  
                 updateCoinDisplay();  
+                freeCoinFab.style.display = 'none';  
                 premiumPopup.classList.remove('active');  
                 successPopup.classList.add('active');  
                 saveToLocalStorage();  
@@ -978,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (testKeys.includes(key.toUpperCase())) {  
                 isPremium = true;  
                 updateCoinDisplay();  
+                freeCoinFab.style.display = 'none';  
                 premiumPopup.classList.remove('active');  
                 successPopup.classList.add('active');  
                 saveToLocalStorage();  
@@ -1014,25 +1046,21 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e){ console.log("Debug - API Error:", e); }  
     }  
   
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && sideMenu.classList.contains('open')) closeSideMenu(); });  
+
+    // Tambahkan handler untuk Escape key di popup Free Coin
     document.addEventListener('keydown', function(e){ 
-        if (e.key === 'Escape') {
-            if (sideMenu.classList.contains('open')) closeSideMenu();
-            if (maintenancePopup.classList.contains('active')) closeMaintenancePopup();
-            if (freecoinPopup.classList.contains('active')) closeFreeCoinPopup();
-        }
+        if (e.key === 'Escape' && freecoinPopup.classList.contains('active')) closeFreeCoinPopup(); 
     });
   
     function init(){  
         loadFromLocalStorage();  
+        updateTimer();  
+        setInterval(updateTimer, 1000);  
+        debugAPI();  
         
         // Load task awal saat aplikasi dimulai
         loadFreeCoinTask();
-        
-        // Mulai countdown maintenance
-        updateMaintenanceCountdown();
-        setInterval(updateMaintenanceCountdown, 1000);
-        
-        debugAPI();  
     }  
     init();  
 });  
