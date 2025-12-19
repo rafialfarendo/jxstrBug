@@ -627,13 +627,14 @@ input, textarea {
       <!-- Send Bug button -->          
       <div class="actions" style="margin-top:12px;">          
         <button class="btn primary" id="sendBugBtn" style="flex: 1;">Send Bug</button>          
-      </div>          
+      </div>  
         
       <!-- Limit Card -->  
       <div class="limit-card">  
         <div class="limit-label">Your Coin's :</div>  
         <div class="limit-value">  
           <span id="currentLimit">0</span>  
+          <span id="premiumBadge" style="font-size:12px; color:var(--online); display:none;"></span>  
         </div>  
       </div>  
     </div>          
@@ -645,7 +646,7 @@ input, textarea {
           <span class="status-indicator online"></span>          
           Free Sender          
         </div>          
-        <div class="status-value">8 Free Sender</div>          
+        <div class="status-value">2 Free Sender</div>          
       </div>          
       <div class="status-item">          
         <div class="status-label">          
@@ -681,7 +682,7 @@ input, textarea {
     </div>          
   </div>          
           
-  <div class="toast" id="toast">Pesan</div>          
+  <div class="toast" id="toast">Pesan</div>  
     
   <!-- Modal for Not Enough Limit -->  
   <div class="modal-overlay" id="limitModal">  
@@ -718,13 +719,15 @@ input, textarea {
   const logBody = document.getElementById('logBody');          
   const toast = document.getElementById('toast');          
   const currentLimit = document.getElementById('currentLimit');          
+  const premiumBadge = document.getElementById('premiumBadge');  
   const limitModal = document.getElementById('limitModal');          
   const closeModalBtn = document.getElementById('closeModalBtn');          
   const modalCloseBtn = document.getElementById('modalCloseBtn');          
   const backBtn = document.querySelector('.back-btn'); // Tombol back baru          
           
   let selectedOption = null;          
-  let jxstr_limits = 0; // Initial limit value  
+  let coins = 0; // Coin dari sistem utama index.html  
+  let isPremium = false; // Status premium dari sistem utama  
           
   // toast helper          
   function showToast(msg, ms = 1800){          
@@ -737,7 +740,6 @@ input, textarea {
   // localStorage keys          
   const LS_SELECTED = 'neoncore_selected_package';          
   const LS_LOGS = 'neoncore_bug_logs';          
-  const LS_LIMITS = 'jxstr_limits';          
           
   // load last selection or set default          
   function loadSelection(){          
@@ -860,65 +862,71 @@ input, textarea {
       return `${t} — ${l.type}: ${l.message}`;          
     }).join('\n\n');          
     logBody.textContent = html;          
-  }          
-          
-  // Limit management functions  
-  function loadLimits() {
-  try {
-    // CARI USERNAME DARI SISTEM UTAMA
-    const username = localStorage.getItem('jxstr_username');
-    // CARI LIMIT DARI SISTEM UTAMA  
-    const limitsData = JSON.parse(localStorage.getItem('jxstr_limits') || '{}');
-    
-    if (username && limitsData[username] !== undefined) {
-      // PAKAI LIMIT DARI SISTEM UTAMA JXSTRBUG V6
-      jxstr_limits = parseInt(limitsData[username], 10);
-    } else {
-      // JIKA TIDAK ADA, PAKAI SISTEM LAMA
-      const stored = localStorage.getItem(LS_LIMITS);
-      if (stored) {
-        jxstr_limits = parseInt(stored, 10);
-      }
-    }
-  } catch(e) {
-    console.error('Error loading limits:', e);
-    // FALLBACK KE SISTEM LAMA
-    const stored = localStorage.getItem(LS_LIMITS);
-    if (stored) jxstr_limits = parseInt(stored, 10);
-  }
-  updateLimitDisplay();
-}  
-    
-  function updateLimitDisplay() {  
-    currentLimit.textContent = jxstr_limits;  
   }  
     
-  function useLimit(amount) {
-  if (jxstr_limits >= amount) {
-    jxstr_limits -= amount;
+  // Load coins dari sistem utama index.html  
+  function loadCoinsFromMainSystem() {  
+    try {  
+      // Ambil data dari sistem utama index.html  
+      const mainData = localStorage.getItem('jxstrbug_data');  
+      if (mainData) {  
+        const data = JSON.parse(mainData);  
+        coins = data.coins || 0;  
+        isPremium = data.isPremium || false;  
+      } else {  
+        // Fallback ke sistem lama jika tidak ada data  
+        const oldLimit = localStorage.getItem('neoncore_limits');  
+        coins = oldLimit ? parseInt(oldLimit, 10) : 0;  
+        isPremium = false;  
+      }  
+    } catch(e) {  
+      console.error('Error loading coins:', e);  
+      coins = 0;  
+      isPremium = false;  
+    }  
+    updateLimitDisplay();  
+  }  
     
-    // UPDATE KEDUA SISTEM: NEONCORE & JXSTRBUG V6
-    try {
-      // 1. UPDATE SISTEM NEONCORE (LAMA)
-      localStorage.setItem(LS_LIMITS, jxstr_limits.toString());
+  function updateLimitDisplay() {  
+    if (isPremium) {  
+      currentLimit.textContent = "Unlimited";  
+      premiumBadge.style.display = 'inline';  
+    } else {  
+      currentLimit.textContent = coins;  
+      premiumBadge.style.display = 'none';  
+    }  
+  }  
+    
+  function useCoins(amount) {  
+    // Jika premium, selalu berhasil  
+    if (isPremium) {  
+      return true;  
+    }  
+    
+    // Jika bukan premium, cek koin cukup  
+    if (coins >= amount) {  
+      coins -= amount;  
       
-      // 2. UPDATE SISTEM JXSTRBUG V6 (UTAMA)
-      const username = localStorage.getItem('jxstr_username');
-      if (username) {
-        const limitsData = JSON.parse(localStorage.getItem('jxstr_limits') || '{}');
-        limitsData[username] = jxstr_limits;
-        localStorage.setItem('jxstr_limits', JSON.stringify(limitsData));
-      }
-    } catch(e) {
-      console.error('Error saving limits:', e);
-    }
-    
-    updateLimitDisplay();
-    return true;
-  } else {
-    return false;
-  }
-}  
+      // Update data di sistem utama  
+      try {  
+        const mainData = localStorage.getItem('jxstrbug_data');  
+        let data = {};  
+        if (mainData) {  
+          data = JSON.parse(mainData);  
+        }  
+        data.coins = coins;  
+        data.isPremium = isPremium;  
+        localStorage.setItem('jxstrbug_data', JSON.stringify(data));  
+      } catch(e) {  
+        console.error('Error saving coins:', e);  
+      }  
+      
+      updateLimitDisplay();  
+      return true;  
+    } else {  
+      return false;  
+    }  
+  }  
     
   function showLimitModal() {  
     limitModal.classList.add('show');  
@@ -939,13 +947,13 @@ input, textarea {
     if(!selectedOption){          
       showToast('Pilih paket terlebih dahulu');          
       return;          
-    }          
+    }  
       
     const [label, lim] = selectedOption.dataset.value.split('|');          
-    const limitCost = parseInt(lim, 10);  
+    const coinCost = parseInt(lim, 10);  
       
-    // Check if user has enough limit  
-    if (!useLimit(limitCost)) {  
+    // Check if user has enough coins  
+    if (!useCoins(coinCost)) {  
       showLimitModal();  
       return;  
     }  
@@ -957,7 +965,7 @@ input, textarea {
       message: `Target=${num}, Paket=${label}(${lim})`          
     };          
     appendLog(entry);          
-    showToast('Bug dikirim (successfully)');          
+    showToast('Bug dikirim (successfully)');  
   });          
           
   // Connect Sender click          
@@ -967,10 +975,13 @@ input, textarea {
       showToast('Isi Add Sender / Pairing terlebih dahulu');          
       pairInput.focus();          
       return;          
-    }          
+    }  
       
-    // Check if user has enough limit for pairing (cost 0)  
-    if (!useLimit(0)) {  
+    // Untuk premium, gratis. Untuk non-premium butuh 1 coin  
+    const coinCost = isPremium ? 0 : 1;  
+      
+    // Check if user has enough coins  
+    if (!useCoins(coinCost)) {  
       showLimitModal();  
       return;  
     }  
@@ -980,8 +991,12 @@ input, textarea {
       type: 'ConnectSender',          
       message: `Sender=${p}`          
     };          
-    appendLog(entry);          
-    showToast('Need "1" coin to connect');          
+    appendLog(entry);  
+    if (isPremium) {  
+      showToast('Server Not Connected');  
+    } else {  
+      showToast('Need 1Coin');  
+    }  
   });          
           
   // clears          
@@ -990,14 +1005,14 @@ input, textarea {
     showToast('Pairing direset');          
   });          
           
-  // Tombol Back click handler (sama seperti di kode kedua)          
-  backBtn.addEventListener('click', function() {          
-    // Tambahkan efek klik          
-    this.classList.add('clicky');          
-    setTimeout(() => this.classList.remove('clicky'), 200);          
-          
-    // Arahkan ke halaman utama (sesuaikan dengan kebutuhan)          
-    window.location.href = 'index.html';          
+  // Tombol Back click handler  
+  backBtn.addEventListener('click', function() {  
+    // Tambahkan efek klik  
+    this.classList.add('clicky');  
+    setTimeout(() => this.classList.remove('clicky'), 200);  
+      
+    // Kembali ke halaman utama  
+    window.location.href = 'index.html';  
   });          
           
   // Modal close handlers  
@@ -1013,8 +1028,8 @@ input, textarea {
           
   // init          
   loadSelection();          
-  renderLogs();          
-  loadLimits();  
+  renderLogs();  
+  loadCoinsFromMainSystem(); // Load coins dari sistem utama  
           
   // persist number input in sessionStorage while page open (optional)          
   try{          
@@ -1022,8 +1037,15 @@ input, textarea {
     const savedNum = sessionStorage.getItem(NS);          
     if(savedNum) numberTarget.value = savedNum;          
     numberTarget.addEventListener('input', ()=> sessionStorage.setItem(NS, numberTarget.value));          
-  }catch(e){}          
-          
+  }catch(e){}  
+    
+  // Tambahkan event listener untuk update koin realtime  
+  // (opsional, jika ingin update saat ada perubahan di tab lain)  
+  window.addEventListener('storage', function(e) {  
+    if (e.key === 'jxstrbug_data') {  
+      loadCoinsFromMainSystem();  
+    }  
+  });  
 })();          
 </script>          
           
