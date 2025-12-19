@@ -6,6 +6,7 @@
 <title>Top Up — JxstrBug V6</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* (CSS tetap sama seperti yang Anda miliki) */
 :root{
   --bg:#000;
   --card:#0d0d0d;
@@ -223,7 +224,6 @@ body{
   gap: 8px;
 }
 
-/* Dihapus pseudo-element dengan "💰" */
 .price-list-title::before {
   content: none;
 }
@@ -248,7 +248,6 @@ body{
   gap: 6px;
 }
 
-/* Mengganti "🪙" dengan titik bulat merah */
 .coin-amount::before {
   content: "●";
   font-size: 14px;
@@ -489,9 +488,15 @@ body{
       }
       
       const coins = foundCode.coins || 10;
+      
+      // Update coins di localStorage
+      const userData = JSON.parse(localStorage.getItem('jxstrbug_data') || '{}');
+      userData.coins = (userData.coins || 0) + coins;
+      localStorage.setItem('jxstrbug_data', JSON.stringify(userData));
+      
       return { 
         valid: true, 
-        message: `Code redeemed — ${coins} coins added`,
+        message: `Code redeemed — ${coins} coins added to your account`,
         coins: coins 
       };
       
@@ -530,12 +535,12 @@ body{
   });
 
   backBtn.addEventListener('click', function(){
-  window.location.href = 'index.html';
-});
+    window.location.href = 'index.html';
+  });
 
   telegramBtn.addEventListener('click', function(){
     showToast('Opening Telegram...');
-      window.location.href = 'https://t.me/kimpiwww';
+    window.open('https://t.me/kimpiwww', '_blank');
   });
 
   whatsappBtn.addEventListener('click', function(){
