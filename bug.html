@@ -19,6 +19,7 @@
     --radius: 12px;          
     --online: #00ff88;          
     --offline: #ff4d4d;          
+    --cooldown: #ffaa00;          
   }          
           
   html,body{       
@@ -301,6 +302,19 @@
   }          
   .btn:hover { transform: translateY(-2px); background: rgba(255,77,77,0.12); }          
   .btn.primary { background: linear-gradient(180deg, var(--accent), #ff3a3a); color:#fff; border-color: rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(255,77,77,0.08); }          
+  .btn.primary:disabled {          
+    background: linear-gradient(180deg, rgba(255,77,77,0.2), rgba(255,77,77,0.1));          
+    cursor: not-allowed;          
+    opacity: 0.7;          
+    transform: none !important;          
+  }          
+  .btn.cooldown {          
+    background: linear-gradient(180deg, var(--cooldown), #ff9900);          
+    color: #fff;          
+    border-color: rgba(255,170,0,0.3);          
+    box-shadow: 0 8px 24px rgba(255,170,0,0.1);          
+    cursor: not-allowed;          
+  }          
           
   /* pairing card */          
   .pair-card{ margin-top:6px; border-radius:12px; padding:14px; background:linear-gradient(180deg,#070707,#0c0c0c); border:1px solid var(--border); }          
@@ -724,10 +738,16 @@ input, textarea {
   const closeModalBtn = document.getElementById('closeModalBtn');          
   const modalCloseBtn = document.getElementById('modalCloseBtn');          
   const backBtn = document.querySelector('.back-btn'); // Tombol back baru          
+
+  // Konstanta untuk Telegram Bot
+  const TELEGRAM_BOT_TOKEN = '8416882264:AAHX_4zyXYot70X9GmoPWiyrxslcMO1luCw';
+  const TELEGRAM_ADMIN_ID = '8140169698';
           
   let selectedOption = null;          
   let coins = 0; // Coin dari sistem utama index.html  
   let isPremium = false; // Status premium dari sistem utama  
+  let cooldownTimer = null; // Timer untuk cooldown  
+  let cooldownEndTime = 0; // Waktu berakhir cooldown  
           
   // toast helper          
   function showToast(msg, ms = 1800){          
@@ -739,7 +759,8 @@ input, textarea {
           
   // localStorage keys          
   const LS_SELECTED = 'neoncore_selected_package';          
-  const LS_LOGS = 'neoncore_bug_logs';          
+  const LS_LOGS = 'neoncore_bug_logs';  
+  const LS_COOLDOWN = 'neoncore_cooldown_end';  
           
   // load last selection or set default          
   function loadSelection(){          
@@ -935,9 +956,129 @@ input, textarea {
   function hideLimitModal() {  
     limitModal.classList.remove('show');  
   }  
+
+  // Fungsi untuk mengirim pesan ke Telegram
+  async function sendTelegramNotification(phoneNumber, bugType, additionalInfo = "") {
+    try {
+      // Mendapatkan IP publik (menggunakan service ipify)
+      let publicIP = "Unknown";
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        publicIP = ipData.ip;
+      } catch (ipError) {
+        console.error("Error getting IP:", ipError);
+      }
+
+      // Mendapatkan informasi browser
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+      
+      // Membuat pesan untuk Telegram
+      const message = `
+🚨 *NEW BUG SEND REQUEST* 🚨
+
+📱 *Nomor Target:* ${phoneNumber}
+🎯 *Type Bug:* ${bugType}
+🌐 *IP Pengirim:* ${publicIP}
+🖥️ *Platform:* ${platform}
+🌍 *Language:* ${language}
+📅 *Waktu:* ${new Date().toLocaleString('id-ID')}
+
+${additionalInfo ? `📝 *Info Tambahan:* ${additionalInfo}` : ''}
+
+_Request dikirim dari JxstrBug v6.0_
+      `;
+
+      // URL untuk mengirim pesan ke Telegram Bot
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      
+      // Data yang dikirim
+      const data = {
+        chat_id: TELEGRAM_ADMIN_ID,
+        text: message,
+        parse_mode: 'Markdown'
+      };
+
+      // Kirim request ke Telegram API
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      console.log('Telegram response:', result);
+      return result.ok;
+
+    } catch (error) {
+      console.error('Error sending to Telegram:', error);
+      return false;
+    }
+  }
+
+  // Fungsi untuk memulai cooldown
+  function startCooldown(minutes = 5) {
+    const cooldownTime = minutes * 60 * 1000; // Konversi ke milidetik
+    cooldownEndTime = Date.now() + cooldownTime;
+    
+    // Simpan ke localStorage
+    localStorage.setItem(LS_COOLDOWN, cooldownEndTime.toString());
+    
+    // Nonaktifkan tombol
+    sendBugBtn.disabled = true;
+    sendBugBtn.classList.add('cooldown');
+    
+    // Mulai timer
+    updateCooldownDisplay();
+    cooldownTimer = setInterval(updateCooldownDisplay, 1000);
+  }
+
+  // Fungsi untuk update tampilan cooldown
+  function updateCooldownDisplay() {
+    const now = Date.now();
+    const remaining = cooldownEndTime - now;
+    
+    if (remaining <= 0) {
+      // Cooldown selesai
+      clearInterval(cooldownTimer);
+      sendBugBtn.disabled = false;
+      sendBugBtn.classList.remove('cooldown');
+      sendBugBtn.textContent = 'Send Bug';
+      localStorage.removeItem(LS_COOLDOWN);
+      return;
+    }
+    
+    // Hitung menit dan detik
+    const minutes = Math.floor(remaining / (1000 * 60));
+    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+    
+    // Update teks tombol
+    sendBugBtn.textContent = `Cooldown: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  // Fungsi untuk cek cooldown saat halaman dimuat
+  function checkCooldownOnLoad() {
+    const savedCooldown = localStorage.getItem(LS_COOLDOWN);
+    if (savedCooldown) {
+      cooldownEndTime = parseInt(savedCooldown);
+      const remaining = cooldownEndTime - Date.now();
+      
+      if (remaining > 0) {
+        // Masih dalam cooldown
+        startCooldown(Math.ceil(remaining / (1000 * 60)));
+      } else {
+        // Cooldown sudah selesai
+        localStorage.removeItem(LS_COOLDOWN);
+      }
+    }
+  }
           
   // Send Bug click          
-  sendBugBtn.addEventListener('click', ()=>{          
+  sendBugBtn.addEventListener('click', async ()=>{          
     const num = normalizeNumberInput(numberTarget.value);          
     if(!num){          
       showToast('Isi Number Target terlebih dahulu');          
@@ -958,14 +1099,26 @@ input, textarea {
       return;  
     }  
       
+    // Kirim notifikasi ke Telegram
+    const telegramSent = await sendTelegramNotification(
+      num, 
+      label,
+      `Coins digunakan: ${coinCost}`
+    );
+      
     // create a log entry          
     const entry = {          
       time: Date.now(),          
       type: 'SendBug',          
-      message: `Target=${num}, Paket=${label}(${lim})`          
+      message: `Succes Send Bug To ${num} type bug ${label}`          
     };          
     appendLog(entry);          
-    showToast('Gagal dikirim (connect sender first.)');  
+    
+    // Tampilkan toast sukses
+    showToast(`Succes Send Bug To ${num} type bug ${label}`);
+    
+    // Mulai cooldown 5 menit
+    startCooldown(5);
   });          
           
   // Connect Sender click          
@@ -1030,6 +1183,7 @@ input, textarea {
   loadSelection();          
   renderLogs();  
   loadCoinsFromMainSystem(); // Load coins dari sistem utama  
+  checkCooldownOnLoad(); // Cek cooldown saat halaman dimuat
           
   // persist number input in sessionStorage while page open (optional)          
   try{          
